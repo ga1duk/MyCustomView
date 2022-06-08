@@ -1,7 +1,10 @@
 package ru.company.customviewtest
 
 import android.content.Context
-import android.graphics.*
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PointF
+import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
 import androidx.core.content.withStyledAttributes
@@ -45,7 +48,8 @@ class StatsView @JvmOverloads constructor(
 
     init {
         context.withStyledAttributes(attrs, R.styleable.StatsView) {
-            arcPaint.strokeWidth = getDimension(R.styleable.StatsView_strokeWidth, arcPaint.strokeWidth)
+            arcPaint.strokeWidth =
+                getDimension(R.styleable.StatsView_strokeWidth, arcPaint.strokeWidth)
             textPaint.textSize = getDimension(R.styleable.StatsView_textSize, textPaint.textSize)
             colors = listOf(
                 getColor(R.styleable.StatsView_color1, getRandomColor()),
@@ -73,15 +77,17 @@ class StatsView @JvmOverloads constructor(
         }
 
         var startAngle = -90F
-        data.forEachIndexed { index, datum ->
-            val angle = datum * 360
+        data.forEachIndexed { index, _ ->
+            val angle = 1F / data.size * 360
             arcPaint.color = colors.getOrElse(index) { getRandomColor() }
             canvas.drawArc(oval, startAngle, angle, false, arcPaint)
             startAngle += angle
         }
 
+        val progressInPercent = 100F
+
         canvas.drawText(
-            "%.2f%%".format(data.sum() * 100F),
+            "%.2f%%".format(progressInPercent),
             center.x,
             center.y + textPaint.textSize / 3F,
             textPaint
