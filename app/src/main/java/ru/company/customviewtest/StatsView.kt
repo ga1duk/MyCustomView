@@ -13,6 +13,7 @@ import kotlin.random.Random.Default.nextInt
 
 private const val customStrokeWidth = 15F
 private const val customTextSize = 40F
+private const val dotRadius = 20F
 
 class StatsView @JvmOverloads constructor(
     context: Context,
@@ -37,6 +38,11 @@ class StatsView @JvmOverloads constructor(
         textAlign = Paint.Align.CENTER
         textSize = AndroidUtils.dp(context, customTextSize).toFloat()
     }
+
+    private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = resources.getColor(R.color.green)
+    }
+
     private var oval = RectF()
     var data: List<Float> = emptyList()
         set(value) {
@@ -85,6 +91,8 @@ class StatsView @JvmOverloads constructor(
         }
 
         val progressInPercent = 100F
+
+        canvas.drawCircle(center.x + 5F, center.y - radius, dotRadius, dotPaint)
 
         canvas.drawText(
             "%.2f%%".format(progressInPercent),
