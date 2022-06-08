@@ -26,17 +26,17 @@ class StatsView @JvmOverloads constructor(
 
     private var radius: Float = 0F
     private var center: PointF = PointF()
-    private val strokeSize = AndroidUtils.dp(context, customStrokeWidth)
+    private val strokeSize = AndroidUtils.convertDpToPx(context, customStrokeWidth)
     private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
         strokeJoin = Paint.Join.ROUND
-        strokeWidth = strokeSize.toFloat()
+        strokeWidth = strokeSize
     }
     private val textPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
         textAlign = Paint.Align.CENTER
-        textSize = AndroidUtils.dp(context, customTextSize).toFloat()
+        textSize = AndroidUtils.convertDpToPx(context, customTextSize)
     }
 
     private val dotPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
