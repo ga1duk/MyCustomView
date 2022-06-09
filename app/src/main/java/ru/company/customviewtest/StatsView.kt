@@ -43,6 +43,14 @@ class StatsView @JvmOverloads constructor(
         color = resources.getColor(R.color.green)
     }
 
+    private val circlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        style = Paint.Style.STROKE
+        strokeCap = Paint.Cap.ROUND
+        strokeJoin = Paint.Join.ROUND
+        strokeWidth = strokeSize
+        color = resources.getColor(R.color.gray)
+    }
+
     private var oval = RectF()
     var data: List<Float> = emptyList()
         set(value) {
@@ -56,6 +64,8 @@ class StatsView @JvmOverloads constructor(
         context.withStyledAttributes(attrs, R.styleable.StatsView) {
             arcPaint.strokeWidth =
                 getDimension(R.styleable.StatsView_strokeWidth, arcPaint.strokeWidth)
+            circlePaint.strokeWidth =
+                getDimension(R.styleable.StatsView_strokeWidth, circlePaint.strokeWidth)
             textPaint.textSize = getDimension(R.styleable.StatsView_textSize, textPaint.textSize)
             colors = listOf(
                 getColor(R.styleable.StatsView_color1, getRandomColor()),
@@ -82,20 +92,21 @@ class StatsView @JvmOverloads constructor(
             return
         }
 
+        canvas.drawCircle(center.x, center.y, radius, circlePaint)
+
         var startAngle = -90F
-        data.forEachIndexed { index, _ ->
-            val angle = 1F / data.size * 360
+        data.forEachIndexed { index, datum ->
+            val angle = datum * 360
             arcPaint.color = colors.getOrElse(index) { getRandomColor() }
             canvas.drawArc(oval, startAngle, angle, false, arcPaint)
             startAngle += angle
         }
 
-        val progressInPercent = 100F
-
         canvas.drawCircle(center.x + 5F, center.y - radius, dotRadius, dotPaint)
 
+
         canvas.drawText(
-            "%.2f%%".format(progressInPercent),
+            "%.2f%%".format(data.sum() * 100F),
             center.x,
             center.y + textPaint.textSize / 3F,
             textPaint
