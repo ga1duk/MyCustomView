@@ -8,8 +8,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val statsView = findViewById<StatsView>(R.id.cv_stats)
-        statsView.data = listOf(
+        findViewById<StatsView>(R.id.cv_stats).data = listOf(
             0.25F,
             0.25F,
             0.25F,
