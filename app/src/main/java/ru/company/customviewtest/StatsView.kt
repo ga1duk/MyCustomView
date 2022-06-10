@@ -1,5 +1,7 @@
 package ru.company.customviewtest
 
+import android.animation.Animator
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
@@ -7,6 +9,7 @@ import android.graphics.PointF
 import android.graphics.RectF
 import android.util.AttributeSet
 import android.view.View
+import android.view.animation.LinearInterpolator
 import androidx.core.content.withStyledAttributes
 import kotlin.math.min
 import kotlin.random.Random.Default.nextInt
@@ -26,7 +29,15 @@ class StatsView @JvmOverloads constructor(
 
     private var radius: Float = 0F
     private var center: PointF = PointF()
+    private var oval = RectF()
+
     private val strokeSize = AndroidUtils.convertDpToPx(context, customStrokeWidth)
+
+    private var colors: List<Int> = emptyList()
+
+    private var progress = 0F
+    private var animator: Animator? = null
+
     private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
@@ -51,14 +62,11 @@ class StatsView @JvmOverloads constructor(
         color = resources.getColor(R.color.gray)
     }
 
-    private var oval = RectF()
     var data: List<Float> = emptyList()
         set(value) {
             field = value
-            invalidate()
+            update()
         }
-
-    private var colors: List<Int> = emptyList()
 
     init {
         context.withStyledAttributes(attrs, R.styleable.StatsView) {
@@ -94,15 +102,15 @@ class StatsView @JvmOverloads constructor(
 
         canvas.drawCircle(center.x, center.y, radius, circlePaint)
 
-        var startAngle = -90F
+        var startAngle = -90F + progress * 360
         data.forEachIndexed { index, datum ->
             val angle = datum * 360
             arcPaint.color = colors.getOrElse(index) { getRandomColor() }
-            canvas.drawArc(oval, startAngle, angle, false, arcPaint)
+            canvas.drawArc(oval, startAngle, angle * progress, false, arcPaint)
             startAngle += angle
         }
 
-        canvas.drawCircle(center.x + 5F, center.y - radius, dotRadius, dotPaint)
+//        canvas.drawCircle(center.x + 5F, center.y - radius, dotRadius, dotPaint)
 
 
         canvas.drawText(
@@ -111,6 +119,24 @@ class StatsView @JvmOverloads constructor(
             center.y + textPaint.textSize / 3F,
             textPaint
         )
+    }
+
+    private fun update() {
+        animator?.let {
+            it.cancel()
+            it.removeAllListeners()
+        }
+
+        animator = ValueAnimator.ofFloat(0F, 1F).apply {
+            addUpdateListener {
+                progress = animatedValue as Float
+                invalidate()
+            }
+            duration = 3000
+            repeatCount = ValueAnimator.INFINITE
+            interpolator = LinearInterpolator()
+            start()
+        }
     }
 
     private fun getRandomColor() = nextInt(0xFF000000.toInt(), 0xFFFFFFFF.toInt())
