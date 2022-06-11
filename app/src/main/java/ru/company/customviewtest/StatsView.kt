@@ -46,6 +46,8 @@ class StatsView @JvmOverloads constructor(
     private var animator3: Animator? = null
     private var animator4: Animator? = null
 
+    private var diagramFillingWay = 0
+
     private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
         strokeCap = Paint.Cap.ROUND
@@ -89,6 +91,7 @@ class StatsView @JvmOverloads constructor(
                 getColor(R.styleable.StatsView_color3, getRandomColor()),
                 getColor(R.styleable.StatsView_color4, getRandomColor())
             )
+            diagramFillingWay = getInteger(R.styleable.StatsView_diagramFillingWay, 0)
         }
     }
 
@@ -110,6 +113,39 @@ class StatsView @JvmOverloads constructor(
 
         canvas.drawCircle(center.x, center.y, radius, circlePaint)
 
+        when (diagramFillingWay) {
+            0 -> drawDiagramParallel(canvas)
+            1 -> drawDiagramSequentially(canvas)
+        }
+
+//        canvas.drawCircle(center.x + 5F, center.y - radius, dotRadius, dotPaint)
+
+        canvas.drawText(
+            "%.2f%%".format(data.sum() * 100F),
+            center.x,
+            center.y + textPaint.textSize / 3F,
+            textPaint
+        )
+    }
+
+    private fun update() {
+        when (diagramFillingWay) {
+            0 -> updateDiagramParallel()
+            1 -> updateDiagramSequentially()
+        }
+    }
+
+    private fun drawDiagramParallel(canvas: Canvas) {
+        var startAngle = -90F
+        data.forEachIndexed { index, datum ->
+            val angle = datum * 360
+            arcPaint.color = colors.getOrElse(index) { getRandomColor() }
+            canvas.drawArc(oval, startAngle, angle * progress1, false, arcPaint)
+            startAngle += angle
+        }
+    }
+
+    private fun drawDiagramSequentially(canvas: Canvas) {
         arcPaint.color = colors.getOrElse(0) { getRandomColor() }
         canvas.drawArc(oval, -90F, 90 * progress1, false, arcPaint)
 
@@ -121,20 +157,42 @@ class StatsView @JvmOverloads constructor(
 
         arcPaint.color = colors.getOrElse(3) { getRandomColor() }
         canvas.drawArc(oval, 180F, 90 * progress4, false, arcPaint)
-
-//        canvas.drawCircle(center.x + 5F, center.y - radius, dotRadius, dotPaint)
-
-
-        canvas.drawText(
-            "%.2f%%".format(data.sum() * 100F),
-            center.x,
-            center.y + textPaint.textSize / 3F,
-            textPaint
-        )
     }
 
-    private fun update() {
+    private fun updateDiagramParallel() {
         animator1?.let {
+            it.cancel()
+            it.removeAllListeners()
+        }
+
+        animator1 = ValueAnimator.ofFloat(0F, 1F).apply {
+            addUpdateListener {
+                progress1 = animatedValue as Float
+                invalidate()
+            }
+            duration = 3000
+            interpolator = LinearInterpolator()
+            start()
+        }
+    }
+
+    private fun updateDiagramSequentially() {
+        animator1?.let {
+            it.cancel()
+            it.removeAllListeners()
+        }
+
+        animator2?.let {
+            it.cancel()
+            it.removeAllListeners()
+        }
+
+        animator3?.let {
+            it.cancel()
+            it.removeAllListeners()
+        }
+
+        animator4?.let {
             it.cancel()
             it.removeAllListeners()
         }
