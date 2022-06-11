@@ -1,6 +1,7 @@
 package ru.company.customviewtest
 
 import android.animation.Animator
+import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
@@ -35,8 +36,15 @@ class StatsView @JvmOverloads constructor(
 
     private var colors: List<Int> = emptyList()
 
-    private var progress = 0F
-    private var animator: Animator? = null
+    private var progress1 = 0F
+    private var progress2 = 0F
+    private var progress3 = 0F
+    private var progress4 = 0F
+
+    private var animator1: Animator? = null
+    private var animator2: Animator? = null
+    private var animator3: Animator? = null
+    private var animator4: Animator? = null
 
     private val arcPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.STROKE
@@ -102,13 +110,17 @@ class StatsView @JvmOverloads constructor(
 
         canvas.drawCircle(center.x, center.y, radius, circlePaint)
 
-        var startAngle = -90F + progress * 360
-        data.forEachIndexed { index, datum ->
-            val angle = datum * 360
-            arcPaint.color = colors.getOrElse(index) { getRandomColor() }
-            canvas.drawArc(oval, startAngle, angle * progress, false, arcPaint)
-            startAngle += angle
-        }
+        arcPaint.color = colors.getOrElse(0) { getRandomColor() }
+        canvas.drawArc(oval, -90F, 90 * progress1, false, arcPaint)
+
+        arcPaint.color = colors.getOrElse(1) { getRandomColor() }
+        canvas.drawArc(oval, 0F, 90 * progress2, false, arcPaint)
+
+        arcPaint.color = colors.getOrElse(2) { getRandomColor() }
+        canvas.drawArc(oval, 90F, 90 * progress3, false, arcPaint)
+
+        arcPaint.color = colors.getOrElse(3) { getRandomColor() }
+        canvas.drawArc(oval, 180F, 90 * progress4, false, arcPaint)
 
 //        canvas.drawCircle(center.x + 5F, center.y - radius, dotRadius, dotPaint)
 
@@ -122,21 +134,50 @@ class StatsView @JvmOverloads constructor(
     }
 
     private fun update() {
-        animator?.let {
+        animator1?.let {
             it.cancel()
             it.removeAllListeners()
         }
 
-        animator = ValueAnimator.ofFloat(0F, 1F).apply {
+        animator1 = ValueAnimator.ofFloat(0F, 1F).apply {
             addUpdateListener {
-                progress = animatedValue as Float
+                progress1 = animatedValue as Float
                 invalidate()
             }
             duration = 3000
-            repeatCount = ValueAnimator.INFINITE
             interpolator = LinearInterpolator()
-            start()
         }
+
+        animator2 = ValueAnimator.ofFloat(0F, 1F).apply {
+            addUpdateListener {
+                progress2 = animatedValue as Float
+                invalidate()
+            }
+            duration = 3000
+            interpolator = LinearInterpolator()
+        }
+
+        animator3 = ValueAnimator.ofFloat(0F, 1F).apply {
+            addUpdateListener {
+                progress3 = animatedValue as Float
+                invalidate()
+            }
+            duration = 3000
+            interpolator = LinearInterpolator()
+        }
+
+        animator4 = ValueAnimator.ofFloat(0F, 1F).apply {
+            addUpdateListener {
+                progress4 = animatedValue as Float
+                invalidate()
+            }
+            duration = 3000
+            interpolator = LinearInterpolator()
+        }
+
+        AnimatorSet().apply {
+            playSequentially(animator1, animator2, animator3, animator4)
+        }.start()
     }
 
     private fun getRandomColor() = nextInt(0xFF000000.toInt(), 0xFFFFFFFF.toInt())
