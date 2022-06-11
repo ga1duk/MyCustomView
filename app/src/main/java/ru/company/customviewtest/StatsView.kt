@@ -1,6 +1,7 @@
 package ru.company.customviewtest
 
 import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.animation.AnimatorSet
 import android.animation.ValueAnimator
 import android.content.Context
@@ -14,6 +15,7 @@ import android.view.animation.LinearInterpolator
 import androidx.core.content.withStyledAttributes
 import kotlin.math.min
 import kotlin.random.Random.Default.nextInt
+
 
 private const val customStrokeWidth = 15F
 private const val customTextSize = 40F
@@ -116,6 +118,7 @@ class StatsView @JvmOverloads constructor(
         when (diagramFillingWay) {
             0 -> drawDiagramParallel(canvas)
             1 -> drawDiagramSequentially(canvas)
+            2 -> drawDiagramBidirectionally(canvas)
         }
 
 //        canvas.drawCircle(center.x + 5F, center.y - radius, dotRadius, dotPaint)
@@ -132,6 +135,7 @@ class StatsView @JvmOverloads constructor(
         when (diagramFillingWay) {
             0 -> updateDiagramParallel()
             1 -> updateDiagramSequentially()
+            2 -> updateDiagramBidirectionally()
         }
     }
 
@@ -159,6 +163,17 @@ class StatsView @JvmOverloads constructor(
         canvas.drawArc(oval, 180F, 90 * progress4, false, arcPaint)
     }
 
+    private fun drawDiagramBidirectionally(canvas: Canvas) {
+        var startAngle = -45F
+        data.forEachIndexed { index, datum ->
+            val angle = datum * 180
+            arcPaint.color = colors.getOrElse(index) { getRandomColor() }
+            canvas.drawArc(oval, startAngle, angle * progress1, false, arcPaint)
+            canvas.drawArc(oval, startAngle, -angle * progress1, false, arcPaint)
+            startAngle += 90
+        }
+    }
+
     private fun updateDiagramParallel() {
         animator1?.let {
             it.cancel()
@@ -172,6 +187,13 @@ class StatsView @JvmOverloads constructor(
             }
             duration = 3000
             interpolator = LinearInterpolator()
+            startDelay = 1000
+            addListener(object : AnimatorListenerAdapter() {
+            override fun onAnimationEnd(animation: Animator) {
+                super.onAnimationEnd(animation)
+                start()
+            }
+        })
             start()
         }
     }
@@ -235,7 +257,37 @@ class StatsView @JvmOverloads constructor(
 
         AnimatorSet().apply {
             playSequentially(animator1, animator2, animator3, animator4)
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    super.onAnimationEnd(animation)
+                    animation.startDelay = 1000
+                    start()
+                }
+            })
         }.start()
+    }
+
+    private fun updateDiagramBidirectionally() {
+        animator1?.let {
+            it.cancel()
+            it.removeAllListeners()
+        }
+
+        animator1 = ValueAnimator.ofFloat(0F, 1F).apply {
+            addUpdateListener {
+                progress1 = animatedValue as Float
+                invalidate()
+            }
+            duration = 3000
+            interpolator = LinearInterpolator()
+            startDelay = 1000
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    start()
+                }
+            })
+            start()
+        }
     }
 
     private fun getRandomColor() = nextInt(0xFF000000.toInt(), 0xFFFFFFFF.toInt())
