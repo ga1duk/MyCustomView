@@ -17,5 +17,4 @@
         app:color4="@color/teal_200"
         app:strokeWidth="@dimen/stats_view_stroke_width"
         app:textSize="@dimen/stats_view_text_size" />
-
 </FrameLayout>
