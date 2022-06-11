@@ -9,10 +9,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         findViewById<StatsView>(R.id.cv_stats).data = listOf(
+            100F,
+            200F,
+            300F,
             500F,
-            500F,
-            500F,
-            500F
+            50F,
+            150F
         )
     }
 }
