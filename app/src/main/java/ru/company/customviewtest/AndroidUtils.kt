@@ -7,6 +7,6 @@ import kotlin.math.ceil
 object AndroidUtils {
 
     @Px
-    fun dp(context: Context, dp: Float): Int =
-        ceil(context.resources.displayMetrics.density * dp).toInt()
+    fun convertDpToPx(context: Context, dp: Float): Float =
+        ceil(context.resources.displayMetrics.density * dp)
 }
