@@ -119,6 +119,7 @@ class StatsView @JvmOverloads constructor(
             0 -> drawDiagramParallel(canvas)
             1 -> drawDiagramSequentially(canvas)
             2 -> drawDiagramBidirectionally(canvas)
+            3 -> drawDiagramRotating(canvas)
         }
 
 //        canvas.drawCircle(center.x + 5F, center.y - radius, dotRadius, dotPaint)
@@ -136,6 +137,7 @@ class StatsView @JvmOverloads constructor(
             0 -> updateDiagramParallel()
             1 -> updateDiagramSequentially()
             2 -> updateDiagramBidirectionally()
+            3 -> updateDiagramRotating()
         }
     }
 
@@ -171,6 +173,16 @@ class StatsView @JvmOverloads constructor(
             canvas.drawArc(oval, startAngle, angle * progress1, false, arcPaint)
             canvas.drawArc(oval, startAngle, -angle * progress1, false, arcPaint)
             startAngle += 90
+        }
+    }
+
+    private fun drawDiagramRotating(canvas: Canvas) {
+        var startAngle = -90F + progress1 * 360
+        data.forEachIndexed { index, datum ->
+            val angle = datum * 360
+            arcPaint.color = colors.getOrElse(index) { getRandomColor() }
+            canvas.drawArc(oval, startAngle, angle * progress1, false, arcPaint)
+            startAngle += angle
         }
     }
 
@@ -283,6 +295,30 @@ class StatsView @JvmOverloads constructor(
             startDelay = 1000
             addListener(object : AnimatorListenerAdapter() {
                 override fun onAnimationEnd(animation: Animator) {
+                    start()
+                }
+            })
+            start()
+        }
+    }
+
+    private fun updateDiagramRotating() {
+        animator1?.let {
+            it.cancel()
+            it.removeAllListeners()
+        }
+
+        animator1 = ValueAnimator.ofFloat(0F, 1F).apply {
+            addUpdateListener {
+                progress1 = animatedValue as Float
+                invalidate()
+            }
+            duration = 3000
+            interpolator = LinearInterpolator()
+            startDelay = 1000
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    super.onAnimationEnd(animation)
                     start()
                 }
             })
